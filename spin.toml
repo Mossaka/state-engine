@@ -6,28 +6,35 @@ version = "0.1.0"
 authors = ["Jiaxiao Zhou (Mossaka) <duibao55328@gmail.com>"]
 description = ""
 
-[application.trigger.http]
-base = "/v1.0/state"
-
 [[trigger.http]]
-route = "/:state_store_name/:key"
+route = "/v1.0/state/:state_store_name/:key"
 component = "state-get-delete"
 
 [component.state-get-delete]
 source = "state-get-delete/target/wasm32-wasi/release/state_get_delete.wasm"
 allowed_outbound_hosts = []
-key_value_stores = ["default"]
+key_value_stores = ["statestore"]
 [component.state-get-delete.build]
 command = "cd state-get-delete && cargo build --target wasm32-wasi --release"
 
 
 [[trigger.http]]
-route = "/:state_store_name"
+route = "/v1.0/state/:state_store_name"
 component = "state-put"
 
 [component.state-put]
 source = "state-put/target/wasm32-wasi/release/state_put.wasm"
 allowed_outbound_hosts = []
-key_value_stores = ["default"]
+key_value_stores = ["statestore"]
 [component.state-put.build]
 command = "cd state-put && cargo build --target wasm32-wasi --release"
+
+[[trigger.http]]
+route = "/..."
+component = "proxy"
+
+[component.proxy]
+source = "proxy/target/wasm32-wasi/release/proxy.wasm"
+allowed_outbound_hosts = [ "http://localhost:*" ]
+[component.proxy.build]
+command = "cd proxy && cargo build --target wasm32-wasi --release"

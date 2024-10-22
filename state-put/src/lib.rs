@@ -38,11 +38,13 @@ fn handle_state_put(req: Request) -> anyhow::Result<Response> {
 }
 
 fn handle_state_post(store: Store, body: Vec<u8>) -> anyhow::Result<Response> {
-    let schema: Schema = serde_json::from_slice(&body)?;
-    let key = schema.key;
-    let val = schema.value.data;
-    let value_bytes = serde_json::to_vec(&val)?;
-    store.set(&key, &value_bytes)?;
+    let schemas: Vec<Schema> = serde_json::from_slice(&body)?;
+    for schema in schemas {
+        let key = schema.key;
+        let val = schema.value;
+        let value_bytes = serde_json::to_vec(&val)?;
+        store.set(&key, &value_bytes)?;
+    }
     Ok(Response::builder()
         .status(200)
         .header("content-type", "text/plain")
@@ -53,10 +55,5 @@ fn handle_state_post(store: Store, body: Vec<u8>) -> anyhow::Result<Response> {
 #[derive(Serialize, Deserialize)]
 struct Schema {
     key: String,
-    value: ValueWrapper,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ValueWrapper {
-    data: serde_json::Value,
+    value: serde_json::Value,
 }
